@@ -1,8 +1,10 @@
-import sys, requests, operator, json
+import sys
 import types
-from functools import reduce
+import requests
 from pprint import pprint
 from enum import Enum
+from get_data import printlb
+
 
 API_ROOT = 'https://statsapi.web.nhl.com'
 TEAMS_ROUTE = '/api/v1/teams'
@@ -26,28 +28,29 @@ class StatsMisc(Enum):
   GOALS_BY_SITUATION = 'goalsByGameSituation'
   SEASON_RANKINGS = 'regularSeasonStatRankings'
 
-
 def main(argv):
-  printlb('\n\nRetrieving data...')
-  print_player_stats()
+  print('\n\nRetrieving data...')
+  print_team_stats()
+
 
 #Output
-def print_team_stats():
-  for team_route in get_team_routes(1):
-    pprint(get_team_stats(team_route))
+def print_team_stats(num_teams = 1):
+  for t_route, t_name in get_team_routes(num_teams):
+    print(t_name)
+    pprint(get_team_stats(t_route))
 
-def print_player_stats():
-  for player_route in get_player_routes(1):
-    print(get_json(player_route)['people'][0]['fullName'])
+def print_player_stats(num_teams = None, num_players = None):
+  for route in get_player_routes(num_teams, num_players):
+    print(get_json(route)['people'][0]['fullName'])
     stat_params = create_stats_params(StatsBy.SEASON)
-    pprint(get_player_stats(player_route, stat_params))
+    pprint(get_player_stats(route, stat_params))
 
 def print_players(num_teams = 1, num_players = None):
   count = 0
-  for t, team_route in enumerate(get_team_routes(num_teams)):
-    print('\n' + get_json(team_route)['teams'][0]['name'])
-    for p, player_route in enumerate(get_roster_routes(team_route, num_players)):
-      player_data = get_json(player_route)['people'][0]
+  for t, t_route in enumerate(get_team_routes(num_teams)):
+    print('\n' + get_json(t_route)['teams'][0]['name'])
+    for p, p_route in enumerate(get_roster_routes(t_route, num_players)):
+      player_data = get_json(p_route)['people'][0]
       print(f"{player_data['fullName']:24}{player_data['primaryPosition']['type']}")
     count += p + 1
   print('\n' + str(count) + ' players')
@@ -74,31 +77,17 @@ def get_player_routes(num_teams = 1, num_players = None) -> types.GeneratorType:
     yield from get_roster_routes(team_route, num_players)
 
 def get_roster_routes(team_route, qty = None) -> types.GeneratorType:
-  return get_routes(team_route + '/roster', ['roster'], ['person'], qty)
-  # for player in get_json(team_route + '/roster')['roster'][:qty]:
-  #   yield player['person']['link']
+  for player in get_json(team_route + '/roster')['roster'][:qty]:
+    yield player['person']['link']
 
-def get_team_routes(qty = None) -> types.GeneratorType:
-  return get_routes(TEAMS_ROUTE, ['teams'], [], qty)
-  # for team in get_json(TEAMS_ROUTE)['teams'][:qty]:
-  #   yield team['link']
+def get_team_routes(qty = None) -> types.GeneratorType: # not sure about this implementation
+  for team in get_json(TEAMS_ROUTE)['teams'][:qty]:
+    yield team['link'], team['name']
 
 
-# Generics
-def get_routes(base, data_keys, elem_keys = [], qty = None) -> types.GeneratorType:
-  for item in get_from_dict(get_json(base), data_keys)[:qty]:
-    yield get_from_dict(item, elem_keys)['link']
-
-def get_from_dict(dict, map_list) -> dict:
-  return reduce(operator.getitem, map_list, dict)
-
-# Utils
 def get_json(route: str) -> dict:
   res = requests.get(API_ROOT + route)
   return res.json()
-
-def printlb(*args, **kwargs):
-  print(*args, '\n', **kwargs)
 
 
 if __name__ == '__main__':
