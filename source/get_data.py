@@ -9,7 +9,7 @@ api_root: str
 
 
 def main(argv):
-  printlb('\n\nRetrieving data...')
+  print('\n\nRetrieving data...')
 
 
 def get_routes(base, data_keys, elem_keys = [], qty = None) -> types.GeneratorType:
@@ -23,9 +23,6 @@ def get_from_dict(dict, map_list) -> dict:
 def get_json(full_path: str) -> dict:
   res = requests.get(full_path)
   return res.json()
-
-def printlb(*args, **kwargs) -> None:
-  print(*args, '\n', **kwargs)
 
 
 if __name__ == '__main__':
