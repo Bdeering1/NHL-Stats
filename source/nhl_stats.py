@@ -13,13 +13,22 @@ CONFIGURATIONS_ROUTE = '/api/v1/configurations'
 
 def main(argv):
   print('\n\nRetrieving data...')
-  with open ('player_stats.csv',  'w') as f:
-    writer = csv.writer(f)
-    writer.writerows(output_player_stats())
+
+  with open ('player_pace_stats.csv', 'w') as f:
+      writer = csv.writer(f)
+      writer.writerows(output_player_stats('onPaceRegularSeason'))
+
+  # with open ('player_scoring_stats.csv', 'w') as f:
+  #     writer = csv.writer(f)
+  #     writer.writerows(output_player_stats('goalsByGameSituation'))
+
+  # with open ('player_stats.csv', 'w') as f:
+  #   writer = csv.writer(f)
+  #   writer.writerows(output_player_stats())
   
-  with open ('goalie_stats.csv',  'w') as f:
-    writer = csv.writer(f)
-    writer.writerows(output_goalie_stats())
+  # with open ('goalie_stats.csv', 'w') as f:
+  #   writer = csv.writer(f)
+  #   writer.writerows(output_goalie_stats())
 
 
 #Output
