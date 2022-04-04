@@ -1,0 +1,9 @@
+# Bytecode
+__pycache__/
+*.py[cod]
+
+# Development Environment
+.vscode/
+
+# Data
+*.csv
